@@ -44,7 +44,7 @@ load("../../../Dropbox/MPI/Tadarida/Data/rdata/move_icarus_tt_daytime_daily.robj
 # --- 1.1 Inspect radius distribution ---
 p_radius <- bats_full %>%
   as_tibble() %>%
-  filter(!is.na(sigfox_computed_location_radius)) %>%
+  # filter(!is.na(sigfox_computed_location_radius)) %>%
   ggplot(aes(sigfox_computed_location_radius / 1000)) +
   geom_histogram(bins = 80, fill = "steelblue", col = "white", alpha = 0.8) +
   geom_vline(xintercept = 30, linetype = "dashed", col = "firebrick", linewidth = 0.8) +
@@ -63,10 +63,10 @@ radius_summary <- bats_full %>%
   filter(!is.na(sigfox_computed_location_radius)) %>%
   summarise(
     n_total      = n(),
-    pct_lt_10km  = mean(sigfox_computed_location_radius < 10000) * 100,
-    pct_lt_20km  = mean(sigfox_computed_location_radius < 20000) * 100,
-    pct_lt_30km  = mean(sigfox_computed_location_radius < 30000) * 100,
-    pct_lt_50km  = mean(sigfox_computed_location_radius < 50000) * 100
+    pct_lt_1km  = mean(sigfox_computed_location_radius %>% as.numeric() < 1000) * 100,
+    pct_lt_5km  = mean(sigfox_computed_location_radius %>% as.numeric() < 5000) * 100,
+    pct_lt_10km  = mean(sigfox_computed_location_radius %>% as.numeric() < 10000) * 100,
+    pct_lt_20km  = mean(sigfox_computed_location_radius %>% as.numeric() < 20000) * 100
   )
 print(radius_summary)
 
@@ -74,9 +74,9 @@ print(radius_summary)
 # Default 30 km matches noctule Sigfox studies; adjust after inspecting above.
 RADIUS_THRESHOLD_M <- 30000
 
-bats_loc_filt <- bats_loc %>%
-  filter(sigfox_computed_location_radius <= RADIUS_THRESHOLD_M |
-           is.na(sigfox_computed_location_radius))
+bats_loc_filt <- bats_loc # %>%
+  # filter(as.numeric(sigfox_computed_location_radius) <= RADIUS_THRESHOLD_M |
+  #          is.na(sigfox_computed_location_radius))
 
 cat(sprintf(
   "Location filter: retained %d / %d fixes (%.1f%%)\n",
@@ -166,7 +166,7 @@ p_disp_hist <- bats_daily %>%
   theme_minimal()
 
 p_disp_ind <- bats_daily %>%
-  filter(!is.na(daily_displacement_km), daily_displacement_km > 0) %>%
+  #filter(!is.na(daily_displacement_km), daily_displacement_km > 0) %>%
   ggplot(aes(
     x     = reorder(individual_local_identifier, daily_displacement_km, median),
     y     = daily_displacement_km
